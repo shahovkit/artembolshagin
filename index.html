@@ -21,7 +21,7 @@
 	let options = [
 		"Бугровые лилипуты",
 		"Алые паруса",
-		"Красные"
+		"Зеленые"
 	];
 
 	let revote = false;
@@ -72,12 +72,13 @@
 			})
 	 		result = {};
 			$.each( voted, function( key_v, vote ){
-					
 					$.each( options, function( key_o, option ){
-						if(result[option] === undefined || result[option] !== 1){
-							result[option] = 1;
-						}else{
-							result[option] += 1;
+						if(vote === option){
+							if(result[option] === undefined || result[option] !== 1){
+								result[option] = 1;
+							}else{
+								result[option] += 1;
+							}
 						}
 					});
 				});

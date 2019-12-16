@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<div class="chart-wrap">
+  <div class="chart-title">
+    Голосование за команду <br>
+    На номер 89686537842
+  </div>
+  <div id="dashboard-stats" class="chart bars-horizontal brand-primary">
+
+  </div>
+</div>
+
+<script src="jquery-3.4.1.min.js"></script>
+<script type="text/javascript">
+
+	let options = [
+		"Бугровые лилипуты",
+		"Алые паруса",
+		"Красные"
+	];
+
+	let revote = false;
+	let perSecond = 5;
+
+	
+	$.each( options, function( key_o, option ){
+		$( "#dashboard-stats" ).append( "<div class=\"row vot-"+option.replace(/\s/,"_")+"\"><span class=\"label\">"+option+"</span><div class=\"bar-wrap\"><div class=\"bar\" data-value=\"0\"></div></div><span class=\"number\">0</span></div>" );
+	});
+
+	let api_key = '3914aa34ffe15ea0289e67de567e44d1'
+	let url = 'https://onlinesim.ru/api/rent/getRentState.php?lang=ru&apikey='+api_key;
+
+	let voted = {};
+	let result = {};
+
+  function generateBarGraph(wrapper) {
+
+    var max_value = 0;
+
+    $(wrapper + ' .bar').each(function(index, el) {
+    	max_value += $(this).data('value')
+    });
+
+    $(wrapper + ' .bar').each(function(index, el) {
+      var bar = $(this),
+          value = bar.data('value'),
+          percent = Math.ceil((value / max_value) * 100);
+
+      bar.width(percent + '%');
+      bar.addClass('in');
+    });
+  }
+
+	setInterval(()=>{
+		jQuery.post(url, (res)=>{
+	 		$.each( res.list, function( key_n, number ){
+				$.each( number.messages.data, function( key_p, page ){
+					$.each( page, function( key_m, message ){
+						$.each( options, function( key_o, option ){
+							if(message.text.match(new RegExp("^"+option+"$",'gi')) !== null && ( !revote || voted[message.service] === undefined)){
+
+								voted[message.service] = option;
+							}
+						});
+					});
+				});
+			})
+	 		result = {};
+			$.each( voted, function( key_v, vote ){
+					
+					$.each( options, function( key_o, option ){
+						if(vote === option){
+							if(result[option] === undefined || result[option] !== 1){
+								result[option] = 1;
+							}else{
+								result[option] += 1;
+							}
+
+						}
+					});
+				});
+
+			$.each( options, function( key_o, option ){
+				if(result[option] !== undefined){
+				$(".vot-"+option.replace(/\s/,"_")+" .number").text(result[option]);
+				$(".vot-"+option.replace(/\s/,"_")+" .bar").data('value', result[option])
+				
+				generateBarGraph('#dashboard-stats');
+
+			}
+			});
+
+		});
+	}, perSecond*1000);
+
+	console.log(result);
+</script>
+</script>
+</body>
+</html>

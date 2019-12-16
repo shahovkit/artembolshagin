@@ -62,7 +62,7 @@
 				$.each( number.messages.data, function( key_p, page ){
 					$.each( page, function( key_m, message ){
 						$.each( options, function( key_o, option ){
-							if(message.text.match(new RegExp("^"+option+"$",'gi')) !== null && ( !revote || voted[message.service] === undefined)){
+							if(message.text.match(new RegExp(option,'gi')) !== null && ( !revote || voted[message.service] === undefined)){
 
 								voted[message.service] = option;
 							}

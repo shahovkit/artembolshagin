@@ -5,15 +5,27 @@
 	<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
-<div class="chart-wrap">
-  <div class="chart-title">
-    Голосование за команду <br>
-    На номер 89686537842
-  </div>
-  <div id="dashboard-stats" class="chart bars-horizontal brand-primary">
-
-  </div>
+	<div class="video"><video preload="auto" autoplay="true" loop="true" muted="muted">
+    <source src="video2.mp4" type="video/mp4; codecs=&quot;avc1.42E01E, mp4a.40.2&quot;">
+    Тег video не поддерживается вашим браузером. 
+    </video></div>
+<div style="
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    ">
+    <div id="dashboard-stats" style="
+    width: 63%;
+    height: 100%;
+    padding-left: 8vh;
+    padding-top: 4vh;
+    box-sizing: border-box;
+">
+    
 </div>
+<div class="right-text" >Отправь СМС с номером<br>любимой команды на номер<div class="phone">8 968 642 69 81</div></div></div>
 
 <script src="jquery-3.4.1.min.js"></script>
 <script type="text/javascript">
@@ -23,15 +35,27 @@
 		"2",
 		"3",
 		"4",
-		"5"
+		"5",
+		"6",
+		"7"
 	];
 
-	let revote = false;
-	let perSecond = 5;
+	let names = [
+		"HR-монтери",
+		"Маркетиане",
+		"ДИТарианцы",
+		"Коммерцианты",
+		"желтые СТМиксы",
+		"Операционные стражи",
+		"Чар-Чары"
+	];
 
-	
+
+	let revote = true;
+	let perSecond = 6;
+
 	$.each( options, function( key_o, option ){
-		$( "#dashboard-stats" ).append( "<div class=\"row vot-"+option.replace(/\s/,"_")+"\"><span class=\"label\">"+option+"</span><div class=\"bar-wrap\"><div class=\"bar\" data-value=\"0\"></div></div><span class=\"number\">0</span></div>" );
+		$( "#dashboard-stats" ).append( "<div class=\"vote-row vot-"+option.replace(/\s/,"_")+"\"><div class=\"progress-bar\"><span class=\"percantage per\">0%</span><div class=\"progress-filler\" data-value=\"0\" style=\"width: 0%;\"><span class=\"percantage2 per\">0%</span></div></div><div class=\"team-title\"><div class=\"big-num\">"+option+"</div> - "+names[option-1]+"</div></div>" );
 	});
 
 	let api_key = '3914aa34ffe15ea0289e67de567e44d1'
@@ -42,16 +66,16 @@
 
   function generateBarGraph(wrapper) {
 
-    var max_value = 0;
+    var sum_value = 0;
 
-    $(wrapper + ' .bar').each(function(index, el) {
-    	max_value += $(this).data('value')
+    $(wrapper + ' .progress-filler').each(function(index, el) {
+    	sum_value += $(this).data('value')
     });
 
-    $(wrapper + ' .bar').each(function(index, el) {
+    $(wrapper + ' .progress-filler').each(function(index, el) {
       var bar = $(this),
           value = bar.data('value'),
-          percent = Math.ceil((value / max_value) * 100);
+          percent = Math.ceil((value / sum_value) * 100);
 
       bar.width(percent + '%');
       bar.addClass('in');
@@ -59,24 +83,28 @@
   }
 
 	setInterval(()=>{
+		voted = {};
+	    result = {};
 		jQuery.post(url, (res)=>{
 	 		$.each( res.list, function( key_n, number ){
-				$.each( number.messages.data, function( key_p, page ){
-					$.each( page, function( key_m, message ){
-						$.each( options, function( key_o, option ){
-							if(message.text.match(new RegExp(option,'gi')) !== null && ( !revote || voted[message.service] === undefined)){
+	 			if(number.number === '9686426981'){
+					$.each( number.messages.data, function( key_p, page ){
+						$.each( page, function( key_m, message ){
+							$.each( options, function( key_o, option ){
+								if(message.text.match(new RegExp(option.replace(/(\r\n|\n|\r)/gm, ""),'gi')) !== null && ( !revote || voted[message.service] === undefined)){
 
-								voted[message.service] = option;
-							}
+									voted[message.service] = option;
+								}
+							});
 						});
 					});
-				});
+				}
 			})
 	 		result = {};
 			$.each( voted, function( key_v, vote ){
 					$.each( options, function( key_o, option ){
 						if(vote === option){
-							if(result[option] === undefined || result[option] !== 1){
+							if(result[option] === undefined){
 								result[option] = 1;
 							}else{
 								result[option] += 1;
@@ -87,8 +115,10 @@
 
 			$.each( options, function( key_o, option ){
 				if(result[option] !== undefined){
-				$(".vot-"+option.replace(/\s/,"_")+" .number").text(result[option]);
-				$(".vot-"+option.replace(/\s/,"_")+" .bar").data('value', result[option])
+					let sum = Object.values(result).reduce((a, b) => a + b, 0);
+					let percent = parseFloat(((result[option] / sum) * 100).toFixed(1));
+				$(".vot-"+option.replace(/\s/,"_")+" .per").text(percent+"%");
+				$(".vot-"+option.replace(/\s/,"_")+" .progress-filler").data('value', result[option])
 				
 				generateBarGraph('#dashboard-stats');
 
